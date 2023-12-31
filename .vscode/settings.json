@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "constants.h": "c",
+        "mman.h": "c",
+        "unistd.h": "c",
+        "fcntl.h": "c",
+        "signal.h": "c",
+        "stdlib.h": "c",
+        "shm.h": "c",
+        "semaphore.h": "c",
+        "types.h": "c",
+        "wait.h": "c",
+        "constant.h": "c"
+    }
+}
