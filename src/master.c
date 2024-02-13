@@ -24,9 +24,12 @@ int main() {
     // Pipe descriptors for communication between processes
     int pipeWindowKeyboard[2];
     int pipeKeyboardDrone[2];
+    int pipeTargetsWindow[2];
+    int pipeObstaclesWindow[2];
 
     // Check if pipes are created successfully
-    if (pipe(pipeWindowKeyboard) == -1 || pipe(pipeKeyboardDrone) == -1) {
+    if (pipe(pipeWindowKeyboard) == -1 || pipe(pipeKeyboardDrone) == -1 || pipe(pipeObstaclesWindow) == -1 || pipe(pipeTargetsWindow) == -1)
+     {
         perror("pipe creation failed");
         exit(EXIT_FAILURE);
     }
@@ -36,17 +39,20 @@ int main() {
     int pipeWatchdogWindow[2];
     int pipeWatchdogKeyboard[2];
     int pipeWatchdogDrone[2];
+    int pipeWatchdogObstacles[2];
+    int pipeWatchdogTargets[2];
 
     // Check if additional pipes are created successfully
     if (pipe(pipeWatchdogDrone) == -1 || pipe(pipeWatchdogKeyboard) == -1 || 
-        pipe(pipeWatchdogServer) == -1 || pipe(pipeWatchdogWindow) == -1) {
+        pipe(pipeWatchdogServer) == -1 || pipe(pipeWatchdogWindow) == -1 ||
+        pipe(pipeWatchdogObstacles) == -1 ||  pipe(pipeWatchdogTargets) == -1) {
         perror("pipe creation failed");
         exit(EXIT_FAILURE);
     }
 
     // Array to store PIDs of all processes
     pid_t allPID[numberOfProcesses];
-    char *nameOfProcess[numberOfProcesses] = {"Server", "Window", "KeyboardManager", "DroneDynamics", "Watchdog"};
+    char *nameOfProcess[numberOfProcesses] = {"Server", "Window", "KeyboardManager", "DroneDynamics", "Watchdog", "Obstacles", "Targets"};
 
     // Loop to fork and launch each process
     for (int i = 0; i < numberOfProcesses; i++) {
@@ -64,8 +70,10 @@ int main() {
                     break;
                 case 1:
                     // Window process
-                    sprintf(args, "%d %d|%d %d", pipeWindowKeyboard[0], pipeWindowKeyboard[1], 
-                            pipeWatchdogWindow[0], pipeWatchdogWindow[1]);
+                    sprintf(args, "%d %d|%d %d|%d %d|%d %d", pipeWindowKeyboard[0], pipeWindowKeyboard[1], 
+                            pipeWatchdogWindow[0], pipeWatchdogWindow[1],
+                            pipeObstaclesWindow[0], pipeObstaclesWindow[1],
+                            pipeTargetsWindow[0], pipeTargetsWindow[1]);
                     char *argsWindow[] = {"/usr/bin/konsole", "-e", "./bin/window", args, NULL};
                     summon(argsWindow, 0, 0, 1);
                     break;
@@ -85,14 +93,35 @@ int main() {
                     summon(argsDrone, 0, 0, 0);
                     break;
                 case 4:
+                    // Obstacles process
+                   sprintf(args, "%d %d|%d %d", pipeObstaclesWindow[0], pipeObstaclesWindow[1], 
+                            pipeWatchdogObstacles[0], pipeWatchdogObstacles[1]);
+                    char *argsObstacles[] = {"./bin/obstacles", args, NULL};
+                    summon(argsObstacles, 0, 0, 0);
+                    break;
+                case 5:
+                    // Targets process
+                    sprintf(args, "%d %d|%d %d", pipeTargetsWindow[0], pipeTargetsWindow[1], 
+                            pipeWatchdogTargets[0], pipeWatchdogTargets[1]);
+                    char *argsTargets[] = {"./bin/targets", args, NULL};
+                    summon(argsTargets, 0, 0, 0);
+                    break;
+                case 6:
                     // Watchdog process
-                    sprintf(args, "%d %d|%d %d|%d %d|%d %d|%d", pipeWatchdogServer[0], pipeWatchdogServer[1], 
+                    sprintf(args, "%d %d|%d %d|%d %d|%d %d|%d %d|%d %d|%d", pipeWatchdogServer[0], pipeWatchdogServer[1], 
                             pipeWatchdogWindow[0], pipeWatchdogWindow[1], 
                             pipeWatchdogKeyboard[0], pipeWatchdogKeyboard[1], 
-                            pipeWatchdogDrone[0], pipeWatchdogDrone[1], allPID[3]);
+                            pipeWatchdogDrone[0], pipeWatchdogDrone[1], 
+                            pipeWatchdogObstacles[0],  pipeWatchdogObstacles[1],
+                            pipeWatchdogTargets[0] , pipeWatchdogTargets[1],
+                            allPID[6]);
                     char *argsWatchdog[] = {"/usr/bin/konsole", "-e", "./bin/watchdog", args, NULL};
                     summon(argsWatchdog, 0, 0, 1);
                     break;
+                
+            default:
+                fprintf(stderr, "Unknown process index %d\n", i);
+                exit(EXIT_FAILURE);
             }
         } else if (pid < 0) {
             perror("fork failed");

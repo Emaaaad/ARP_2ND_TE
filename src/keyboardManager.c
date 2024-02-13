@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     FILE *logFile;
     char logFilePath[100];
     snprintf(logFilePath, sizeof(logFilePath), "log/keyboardLog.txt");
-    logFile = fopen(logFilePath, "w"); // "a" mode appends to the file
+    logFile = fopen(logFilePath, "w"); 
 
     if (logFile == NULL) {
         perror("Error opening log file\n");

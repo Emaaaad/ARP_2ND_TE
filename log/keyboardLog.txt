@@ -1,2 +1,0 @@
-Key Press: š, Force Direction: [0, 0]
-Key Press: f, Force Direction: [1, 0]

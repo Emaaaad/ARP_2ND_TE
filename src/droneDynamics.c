@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     int flags = fcntl(pipeKeyboardDrone[0], F_GETFL);
     fcntl(pipeKeyboardDrone[0], F_SETFL, flags | O_NONBLOCK);
 
-    int forceDirection[2]; // force direction of x and y coordinates
+    int forceDirection[2]; 
     double position[6];
     int initial = 0;
 

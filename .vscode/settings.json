@@ -10,6 +10,9 @@
         "semaphore.h": "c",
         "types.h": "c",
         "wait.h": "c",
-        "constant.h": "c"
+        "constant.h": "c",
+        "time.h": "c",
+        "stdbool.h": "c",
+        "stat.h": "c"
     }
 }

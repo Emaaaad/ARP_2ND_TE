@@ -11,6 +11,7 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <time.h>
 #include "../include/constant.h"
 
 int main(int argc, char *argv[]) {
@@ -22,7 +23,7 @@ int main(int argc, char *argv[]) {
     sigaction(SIGUSR1, &sig_act, NULL);
 
     // Pipes
-    pid_t serverPID, watchdogPID;
+    pid_t serverPID;
     serverPID = getpid();
     int pipeWatchdogServer[2];
     sscanf(argv[1], "%d %d", &pipeWatchdogServer[0], &pipeWatchdogServer[1]);
@@ -39,7 +40,7 @@ int main(int argc, char *argv[]) {
     FILE *logFile;
     char logFilePath[100];
     snprintf(logFilePath, sizeof(logFilePath), "log/ServerLog.txt");
-    logFile = fopen(logFilePath, "w"); // "a" mode appends to the file
+    logFile = fopen(logFilePath, "w"); 
 
     if (logFile == NULL) {
         perror("Error opening log file");
@@ -86,17 +87,49 @@ int main(int argc, char *argv[]) {
     sem_post(semaphoreID);
 
     while (1) {
-        // COPY POSITION OF THE DRONE FROM SHARED MEMORY
-        sem_wait(semaphoreID);
-        memcpy(position, shmPointer, sharedSegSize);
-        sem_post(semaphoreID);
+    // Get current time
+    time_t rawtime;
+    struct tm *timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    
+    // COPY POSITION OF THE DRONE FROM SHARED MEMORY
+    sem_wait(semaphoreID);
+    memcpy(position, shmPointer, sharedSegSize);
+    sem_post(semaphoreID);
 
-        // Write to the log file
-        fprintf(logFile, "Initial Position: %.2f, %.2f | Previous Position: %.2f, %.2f | Current Position: %.2f, %.2f]\n",
-                position[0], position[1], position[2], position[3], position[4], position[5]);
-        fflush(logFile); // Ensure the data is written to the file immediately
-        sleep(1);
+    // Write to the log file with time
+    fprintf(logFile, "[%02d:%02d:%02d] Drone Position: %.2f, %.2f\n",
+            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec,
+            position[4], position[5]);
+
+    // Read obstacles reached or not
+    int obstacleHit;
+    sem_wait(semaphoreID);
+    memcpy(&obstacleHit, shmPointer, sizeof(obstacleHit));
+    sem_post(semaphoreID);
+
+    // Check if an obstacle was hit
+    if (obstacleHit == -1) {
+        fprintf(logFile, "[%02d:%02d:%02d] Obstacle hit!\n",
+                timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
     }
+
+    // Read target with value from shared memory
+    int targetHitValue;
+    sem_wait(semaphoreID);
+    memcpy(&targetHitValue, shmPointer, sizeof(targetHitValue));
+    sem_post(semaphoreID);
+
+    // Check if a target with value was hit
+    if (targetHitValue >= 1 && targetHitValue <= 10) {
+        fprintf(logFile, "[%02d:%02d:%02d] Target hit with value: %d\n",
+                timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, targetHitValue);
+    }
+
+    fflush(logFile); // Ensure the data is written to the file immediately
+    sleep(1);
+}
 
     // CLEANUP
     shm_unlink(SHM_PATH);
