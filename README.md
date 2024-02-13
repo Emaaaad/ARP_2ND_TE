@@ -1,8 +1,8 @@
 # Multi-Process Drone System
 
 ## Contributors
-- Seyed Emad Razavi
-- Tanvir Rahman Sajal
+- [Seyed Emad Razavi](https://github.com/Emaaaad)
+- [Tanvir Rahman Sajal](https://github.com/tanvirrsajal)
 
 ## Project Overview
 Our goal for this project was to implement a multi-process drone system in C which is managed by a master process. This master process oversees the creation and termination of all other processes, which include:
