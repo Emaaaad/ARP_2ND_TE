@@ -36,7 +36,11 @@ This is the first part of the complete project. Future enhancements will include
 ## How to Run
 
 ### Compile
-To compile the code, navigate to the project directory in the terminal and type `make`. This will compile the source files and generate the executable.
+To compile the code, navigate to the project directory in the terminal and type:
+```bash
+make
+```
+This will compile the source files and generate the executable.
 
 ### Removing Old Bin Files
 Before recompiling the code, it's recommended to remove old binary files. To do this, run the command:
