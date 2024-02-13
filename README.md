@@ -5,7 +5,7 @@
 - [Tanvir Rahman Sajal](https://github.com/tanvirrsajal)
 
 ## Overview
-This project implements a multi-process drone navigation system in C. The system is managed by a master process and includes components such as keyboard input, drone dynamics, window display, watchdog, server, obstacles, and targets. Users can control the drone's movement using predefined keys, and the system displays the drone's movement on the screen.
+This project implements a multi-process drone navigation system in C. The system is managed by a master process and includes components such as keyboard input, drone dynamics, window display, watchdog, server, obstacles, and targets. Users can control the drone's movement using predefined keys, and the system displays the drone's movement on the screen. Additionally, the project features a scoring mechanism that increases with reached targets and decreases upon encountering obstacles.
 
 ## Features
 - Multi-process architecture
@@ -69,7 +69,7 @@ Note: Pressing the same key increases the speed of the drone.
 
 The `master.c` module serves as the central command unit of our multi-process drone system, orchestrating the various components crucial to the system's functionality. It performs several key roles:
 
-- **Process Creation and Management:** Utilizing fundamental fork mechanisms, it initiates and oversees the child processes essential for the system: the drone, server, keyboard manager, and watchdog. This creation process includes assigning and tracking their Process Identifiers (PIDs) for effective management.
+- **Process Creation and Management:** Utilizing fundamental fork mechanisms, it initiates and oversees the child processes essential for the system: the drone, server, keyboard manager, watchdog, obstacles, and targets. This creation process includes assigning and tracking their Process Identifiers (PIDs) for effective management.
 
 - **Inter-Process Communication:** The master process is adept at facilitating communication between these child processes using pipes. This setup ensures a streamlined flow of information, allowing each process to function in concert with others.
 
@@ -78,6 +78,7 @@ The `master.c` module serves as the central command unit of our multi-process dr
 - **Graceful Termination:** In response to a user interrupt signal (such as `SIGINT`), the master process takes charge to orderly conclude the system's operation. It does this by terminating all child processes in a controlled manner, thereby ensuring a clean and stable end to the simulation.
 
 The `master.c`'s robust process management and inter-process communication establish it as the backbone of the drone system, ensuring a cohesive and synchronized operation across all components.
+
 
 ### Window Process (`window.c`)
 
@@ -95,7 +96,6 @@ The `window.c` module is integral to the user interface of our multi-process dro
 - **Termination:** Upon receiving a `SIGINT` signal, the `window` process gracefully exits, closing the ncurses interface and ensuring a smooth and orderly shutdown of the visual component of the system.
 
 This module not only presents the real-time position of the drone but also plays a crucial role in facilitating user interaction, making it a cornerstone of the system's user experience.
-
 
 ### Keyboard Manager Process (`keyboardManager.c`)
 
@@ -143,20 +143,51 @@ The `server.c` module is a key component in maintaining the integrity and smooth
 This meticulous approach adopted by the `server.c` process underscores its significance in the system, particularly in terms of data synchronization and operational harmony between various components of the drone system.
 
 
+### Obstacles Process (`obstacles.c`)
+
+The `obstacles.c` module introduces dynamic obstacles into our multi-process drone system, enhancing its realism and complexity. Its functionalities and contributions are detailed as follows:
+
+- **Obstacle Generation:** `obstacles.c` periodically generates new obstacle positions within the operational area of the drone. These obstacles serve as dynamic elements that the drone must navigate around, adding an element of challenge and strategy to the system.
+
+- **Repulsive Forces Calculation:** The module calculates repulsive forces exerted by obstacles on the drone based on its position relative to them. It utilizes Latombe / Kathib’s model to determine the magnitude and direction of these forces, influencing the drone's movement dynamics.
+
+- **Inter-Process Communication:** Similar to other components, `obstacles.c` communicates with relevant processes, such as the drone dynamics module, to relay obstacle positions and influence drone movement accordingly. This seamless integration ensures coordinated interaction among system components.
+
+- **Logging and Monitoring:** The module logs obstacle positions and relevant data for monitoring and analysis purposes. This logging mechanism provides valuable insights into the system's behavior and aids in performance evaluation and debugging.
+
+The inclusion of `obstacles.c` enriches the drone system by introducing dynamic challenges that require adaptive navigation strategies, fostering a more engaging and immersive user experience.
+
+
+### Targets Process (`targets.c`)
+
+The `targets.c` module introduces targets into our multi-process drone system, adding a layer of objectives and objectives completion mechanics. Its functionalities and contributions are outlined below:
+
+- **Target Generation:** `targets.c` periodically generates new target positions within the operational area of the drone. These targets serve as objectives for the drone to reach and interact with, enhancing the system's gameplay and user engagement.
+
+- **Scoring Mechanism:** Upon reaching a target, the drone's score is incremented, providing a tangible measure of progress and accomplishment within the system. Conversely, collision with obstacles deducts from the score, introducing risk-reward dynamics and strategic decision-making elements.
+
+- **Inter-Process Communication:** Similar to other components, `targets.c` communicates with relevant processes, such as the drone dynamics module, to relay target positions and influence drone movement accordingly. This communication ensures coherent interaction among system components.
+
+- **Logging and Monitoring:** The module logs target positions and relevant data for monitoring and analysis purposes. This logging capability facilitates performance evaluation, user feedback analysis, and system debugging.
+
+The addition of `targets.c` enriches the drone system by introducing interactive objectives and scoring mechanisms, transforming it into a dynamic and engaging simulation environment.
+
+
 ### Watchdog Process (`watchdog.c`)
 
-The `watchdog.c` module functions as a critical monitoring component in our multi-process drone system, ensuring the stability and responsiveness of all processes. Its key operations include:
+The `watchdog.c` module serves as the vigilant guardian of our multi-process drone system, ensuring its stability and responsiveness at all times. Its core functionalities and contributions are detailed below:
 
-- **Initialization and Signal Handling:** Initially, `watchdog.c` acquires the Process Identifiers (PIDs) of all other processes in the system. This enables it to monitor and manage these processes effectively. Additionally, it sets up handlers for signals like `SIGINT` and `SIGUSR2`, preparing it to respond appropriately to various system states and requests.
+- **Initialization and Signal Handling:** Upon startup, `watchdog.c` retrieves the Process Identifiers (PIDs) of all other processes, enabling it to monitor and manage their activity. It establishes signal handlers for critical signals like `SIGINT` and `SIGUSR2`, preparing for graceful shutdowns and communication with other processes.
 
-- **Process Monitoring:** One of the primary functions of the watchdog is to continuously send `SIGUSR1` signals to all processes. This serves as a regular check to ensure that each process is running and responsive. Alongside this, the watchdog maintains counters for each process, tracking their responsiveness over time.
+- **Continuous Monitoring:** The watchdog conducts regular checks by sending `SIGUSR1` signals to all processes. This ongoing surveillance ensures that each process remains responsive and operational. Concurrently, the watchdog maintains individual counters for each process, monitoring their responsiveness over time.
 
-- **Responsiveness Check and System Termination:** If any process fails to respond within a predetermined threshold, it is a signal to the watchdog that something may be wrong. In such cases, the watchdog takes decisive action by sending a `SIGINT` signal to terminate all processes, effectively bringing the system to a controlled stop. This is a crucial mechanism to prevent system malfunctions or unresponsive states.
+- **Responsiveness Assessment:** In the event of a process failing to respond within a predefined threshold, the watchdog interprets this as a potential anomaly. It takes proactive measures by initiating a graceful shutdown sequence, sending a `SIGINT` signal to terminate all processes. This decisive action mitigates the risk of system malfunctions or unresponsive states.
 
-- **Self-Termination:** The watchdog itself is also designed to terminate gracefully upon receiving a `SIGINT` signal. This allows for a clean shutdown of the monitoring component when the system is being intentionally stopped.
+- **Self-Termination:** The watchdog is programmed to gracefully terminate itself upon receiving a `SIGINT` signal. This ensures a systematic shutdown of the monitoring component when the system is intentionally halted, contributing to the overall coherence of the shutdown process.
 
-Through these functionalities, `watchdog.c` upholds the operational integrity of the drone system, playing a vital role in maintaining the overall health and reliability of the process ecosystem.
+Through its vigilant oversight and swift intervention capabilities, `watchdog.c` safeguards the operational integrity of the drone system, instilling confidence in its reliability and robustness.
 
 
 ## Conclusion
-We have developed a sophisticated multi-process drone simulation system that leverages shared memory for efficient inter-process communication and features a text-based user interface. This system exemplifies the collaborative operation of multiple processes: the keyboardManager captures and processes user commands to dictate the drone's trajectory; the droneDynamics module dynamically computes the drone's flight position; the window process renders the drone's real-time location within the simulation environment; the watchdog oversees process health, ensuring system integrity; and the server process facilitates access to shared memory, acting as a conduit between the drone's operational logic and the supervisory watchdog. This program not only demonstrates the practical application of concurrent processing and synchronization mechanisms, such as semaphores, but also establishes a robust framework upon which more complex functionalities, such as obstacle avoidance and target tracking, can be integrated in future iterations of the project.
+
+We have expanded our sophisticated multi-process drone simulation system to include obstacles and targets, enhancing its functionality and realism. Leveraging shared memory and inter-process communication via pipes, the system orchestrates the collaborative operation of multiple processes. The keyboardManager captures user commands to direct the drone's trajectory, while the droneDynamics module dynamically computes its flight position. The window process renders the drone's real-time location, and the watchdog ensures overall system integrity. Additionally, the server process facilitates shared memory access, acting as a conduit between the drone's logic and the supervisory watchdog. With the integration of obstacles and targets, conveyed through pipes, the system achieves greater complexity, offering a platform for future enhancements and the implementation of advanced functionalities.
