@@ -4,14 +4,24 @@
 - [Seyed Emad Razavi](https://github.com/Emaaaad)
 - [Tanvir Rahman Sajal](https://github.com/tanvirrsajal)
 
-## Project Overview
-Our goal for this project was to implement a multi-process drone system in C which is managed by a master process. This master process oversees the creation and termination of all other processes, which include:
+## Overview
+This project implements a multi-process drone navigation system in C. The system is managed by a master process and includes components such as keyboard input, drone dynamics, window display, watchdog, server, obstacles, and targets. Users can control the drone's movement using predefined keys, and the system displays the drone's movement on the screen.
 
-1. **keyboardManager:** Takes user input, setting direction and force for the drone.
-2. **droneDynamics:** Calculates the updated position of the drone based on the input.
-3. **Window:** Shows the movement of the drone on the user's screen.
+## Features
+- Multi-process architecture
+- User-controlled drone movement
+- Real-time display of drone position
+- Watchdog for process monitoring
+- Shared memory and inter-process communication
+
+## Components
+1. **keyboardManager:** Accepts user input to control the drone's direction and force.
+2. **droneDynamics:** Computes the drone's position based on user input and obstacle avoidance logic.
+3. **Window:** Displays the drone's movement on the screen.
 4. **watchdog:** Monitors all processes to ensure correct operation.
-5. **server:** Handles access to shared memory and communicates with the watchdog.
+5. **server:** Handles shared memory access and communication with the watchdog.
+6. **obstacles:** Generates obstacles that the drone must navigate around.
+7. **targets:** Defines targets for the drone to reach.
 
 The processes communicate using shared memory and semaphores, pipes, and the system is designed to run in a Linux environment. The user can control the drone by pressing defined keys on the keyboard, and the drone moves accordingly on the screen. Two Konsoles are displayed; one shows the drone movement and the other for the watchdog, displaying the sent and received signals to ensure everything is working properly.
 
