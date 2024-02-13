@@ -34,7 +34,17 @@ This is the first part of the complete project. Future enhancements will include
 - Konsole terminal
 
 ## How to Run
-The code can be run in the terminal just by typing`make`. The user can command the drone using the keyboard with the following directions:
+
+### Compile
+To compile the code, navigate to the project directory in the terminal and type `make`. This will compile the source files and generate the executable.
+
+### Removing Old Bin Files
+Before recompiling the code, it's recommended to remove old binary files. To do this, run the command:
+
+```bash
+make clean 
+```
+The user can command the drone using the keyboard with the following directions:
 
 - `w`: Move up-left
 - `e`: Move up
