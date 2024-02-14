@@ -63,7 +63,7 @@ The user can command the drone using the keyboard with the following directions:
 Note: Pressing the same key increases the speed of the drone.
 
 ## Components System and Architecture
-![System Architecture](https://github.com/Emaaaad/ARP_1ST_TE/blob/main/ARP1%20(1).png)
+![System Architecture](https://github.com/Emaaaad/ARP_2ND_TE/blob/main/diagram/ARP2.png)
 
 ### Master Process (`master.c`)
 
